@@ -1,0 +1,31 @@
+{
+    "name": "SFramework.Repositories.Odin.Editor",
+    "rootNamespace": "SFramework.Repositories.Odin.Editor",
+    "references": [
+        "SFramework.Core.Runtime",
+        "SFramework.Core.Editor",
+        "SFramework.Repositories.Runtime",
+        "SFramework.Repositories.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Sirenix.OdinInspector.Editor.dll",
+        "Sirenix.OdinInspector.Attributes.dll",
+        "Sirenix.Utilities.dll",
+        "Sirenix.Utilities.Editor.dll",
+        "Sirenix.Serialization.dll",
+        "Sirenix.Serialization.Config.dll",
+        "Newtonsoft.Json.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "ODIN_INSPECTOR"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

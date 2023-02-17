@@ -1,0 +1,13 @@
+{
+  "author": "Secret Place Studio",
+  "name": "sp.sframework.repositories.odin",
+  "displayName": "SF Repositories Odin",
+  "version": "0.1.0",
+  "description": "",
+  "keywords": [
+    "repositories",
+    "sframework"
+  ],
+  "category": "SFramework",
+  "type": "library"
+}
