@@ -1,13 +1,15 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using SFramework.Repositories.Editor;
 using SFramework.Repositories.Runtime;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities;
 using Sirenix.Utilities.Editor;
 using UnityEditor;
 using UnityEngine;
-using SFEditorExtensions = SFramework.Repositories.Editor.SFEditorExtensions;
 
 namespace SFramework.Repositories.Odin.Editor
 {
@@ -15,6 +17,8 @@ namespace SFramework.Repositories.Odin.Editor
     {
         private Vector2 menuScroll;
         private Vector2 scroll;
+
+        private Dictionary<ISFRepository, string> _pathByMenu = new Dictionary<ISFRepository, string>();
 
         [MenuItem("Window/SFramework/Repositories")]
         private static void OpenWindow()
@@ -27,6 +31,8 @@ namespace SFramework.Repositories.Odin.Editor
 
         protected override OdinMenuTree BuildMenuTree()
         {
+            _pathByMenu.Clear();
+
             var tree = new OdinMenuTree(false)
             {
                 Config =
@@ -39,12 +45,13 @@ namespace SFramework.Repositories.Odin.Editor
 
             foreach (var type in GetInheritedClasses(typeof(ISFRepository)))
             {
-                var repositories = SFEditorExtensions.FindRepositories(type);
+                var repositories = SFEditorExtensions.FindRepositoriesWithPaths(type);
 
                 foreach (var repository in repositories)
                 {
-                    var repoType = repository.Type.Replace("SF", "").Replace("Repository", "");
-                    tree.Add($"Repositories/{repoType}/{repository._Name}", repository);
+                    var repoType = repository.Key.Type.Replace("SF", "").Replace("Repository", "");
+                    tree.Add($"Repositories/{repoType}/{repository.Key._Name}", repository.Key);
+                    _pathByMenu[repository.Key] = repository.Value;
                 }
             }
 
@@ -91,13 +98,21 @@ namespace SFramework.Repositories.Odin.Editor
 
             if (repository != null)
             {
-                if (GUILayout.Button("Export"))
+                if (GUILayout.Button("Save"))
                 {
-                    GUIUtility.systemCopyBuffer = JsonConvert.SerializeObject(repository, Formatting.Indented);
-                    Debug.Log("<color=green>Copied to clipboard</color>");
+                    var result = JsonConvert.SerializeObject(repository, Formatting.Indented);
+                    var path = Application.dataPath + _pathByMenu[repository].Replace("Assets", "");
+                    var savePath = EditorUtility.SaveFilePanel("Save Repository", Path.GetDirectoryName(path), Path.GetFileName(path), "json");
+                    if (!string.IsNullOrEmpty(savePath))
+                    {
+                        File.WriteAllText(savePath, result);
+                        AssetDatabase.SaveAssets();
+                        AssetDatabase.Refresh();
+                    }
                 }
             }
         }
+
 
         private Type[] GetInheritedClasses(Type MyType)
         {
