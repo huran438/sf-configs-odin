@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using SFramework.Repositories.Editor;
 using SFramework.Repositories.Runtime;
 using Sirenix.OdinInspector.Editor;
@@ -50,7 +51,7 @@ namespace SFramework.Repositories.Odin.Editor
                 foreach (var repository in repositories)
                 {
                     var repoType = repository.Key.Type.Replace("SF", "").Replace("Repository", "");
-                    tree.Add($"Repositories/{repoType}/{repository.Key._Name}", repository.Key);
+                    tree.Add($"Repositories/{repoType}/{repository.Key.Name}", repository.Key);
                     _pathByMenu[repository.Key] = repository.Value;
                 }
             }
@@ -68,7 +69,7 @@ namespace SFramework.Repositories.Odin.Editor
             GUILayout.FlexibleSpace();
             SirenixEditorGUI.HorizontalLineSeparator(1);
 
-            if (GUILayout.Button("Reload", GUILayoutOptions.Height(30)))
+            if (GUILayout.Button("Reload", GUILayoutOptions.Height(20)))
             {
                 ForceMenuTreeRebuild();
             }
@@ -81,11 +82,11 @@ namespace SFramework.Repositories.Odin.Editor
             var selection = MenuTree.Selection;
             var repository = selection.SelectedValue as ISFRepository;
 
-            if (repository != null)
-            {
-                var repoType = repository.Type.Replace("SF", "").Replace("Repository", "");
-                SirenixEditorGUI.Title(repository._Name, repoType, TextAlignment.Center, true);
-            }
+            if (repository == null) return;
+
+            var repoType = repository.Type.Replace("SF", "").Replace("Repository", "");
+            SirenixEditorGUI.Title(repository.Name, repoType, TextAlignment.Center, true);
+            repository.Name = SirenixEditorGUI.DynamicPrimitiveField(new GUIContent("Name"), repository.Name);
 
             scroll = GUILayout.BeginScrollView(scroll);
             {
@@ -96,24 +97,20 @@ namespace SFramework.Repositories.Odin.Editor
             GUILayout.FlexibleSpace();
             SirenixEditorGUI.HorizontalLineSeparator(1);
 
-            if (repository != null)
+            if (GUILayout.Button("Save"))
             {
-                if (GUILayout.Button("Save"))
+                var result = JsonConvert.SerializeObject(repository, Formatting.Indented);
+                var path = Application.dataPath + _pathByMenu[repository].Replace("Assets", "");
+                var savePath = EditorUtility.SaveFilePanel("Save Repository", Path.GetDirectoryName(path), Path.GetFileName(path),
+                    "json");
+                if (!string.IsNullOrEmpty(savePath))
                 {
-                    var result = JsonConvert.SerializeObject(repository, Formatting.Indented);
-                    var path = Application.dataPath + _pathByMenu[repository].Replace("Assets", "");
-                    var savePath = EditorUtility.SaveFilePanel("Save Repository", Path.GetDirectoryName(path), Path.GetFileName(path), "json");
-                    if (!string.IsNullOrEmpty(savePath))
-                    {
-                        File.WriteAllText(savePath, result);
-                        AssetDatabase.SaveAssets();
-                        AssetDatabase.Refresh();
-                    }
+                    File.WriteAllText(savePath, result);
+                    AssetDatabase.SaveAssets();
+                    AssetDatabase.Refresh();
                 }
             }
         }
-
-
         private Type[] GetInheritedClasses(Type MyType)
         {
             return AppDomain.CurrentDomain.GetAssemblies()
