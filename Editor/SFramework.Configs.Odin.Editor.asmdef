@@ -1,11 +1,11 @@
 {
-    "name": "SFramework.Repositories.Odin.Editor",
-    "rootNamespace": "SFramework.Repositories.Odin.Editor",
+    "name": "SFramework.Configs.Odin.Editor",
+    "rootNamespace": "SFramework.Configs.Odin.Editor",
     "references": [
         "SFramework.Core.Runtime",
         "SFramework.Core.Editor",
-        "SFramework.Repositories.Runtime",
-        "SFramework.Repositories.Editor"
+        "SFramework.Configs.Runtime",
+        "SFramework.Configs.Editor"
     ],
     "includePlatforms": [
         "Editor"

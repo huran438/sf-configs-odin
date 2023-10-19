@@ -3,28 +3,27 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using SFramework.Repositories.Editor;
-using SFramework.Repositories.Runtime;
+using SFramework.Configs.Editor;
+using SFramework.Configs.Runtime;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities;
 using Sirenix.Utilities.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace SFramework.Repositories.Odin.Editor
+namespace SFramework.Configs.Odin.Editor
 {
-    public class SFRepositoriesWindow : OdinMenuEditorWindow
+    public class SFConfigsWindow : OdinMenuEditorWindow
     {
         private Vector2 menuScroll;
         private Vector2 scroll;
 
-        private Dictionary<ISFRepository, string> _pathByMenu = new Dictionary<ISFRepository, string>();
+        private Dictionary<ISFConfig, string> _pathByMenu = new Dictionary<ISFConfig, string>();
 
         [MenuItem("Window/SFramework/Repositories")]
         private static void OpenWindow()
         {
-            var window = GetWindow<SFRepositoriesWindow>();
+            var window = GetWindow<SFConfigsWindow>();
             window.minSize = new Vector2(300f, 300f);
             window.titleContent = new GUIContent("Repositories", EditorIcons.Eject.Raw);
             window.Show();
@@ -44,9 +43,9 @@ namespace SFramework.Repositories.Odin.Editor
             };
 
 
-            foreach (var type in GetInheritedClasses(typeof(ISFRepository)))
+            foreach (var type in GetInheritedClasses(typeof(ISFConfig)))
             {
-                var repositories = SFEditorExtensions.FindRepositoriesWithPaths(type);
+                var repositories = SFConfigsEditorExtensions.FindRepositoriesWithPaths(type);
 
                 foreach (var repository in repositories)
                 {
@@ -80,7 +79,7 @@ namespace SFramework.Repositories.Odin.Editor
         protected override void DrawEditor(int index)
         {
             var selection = MenuTree.Selection;
-            var repository = selection.SelectedValue as ISFRepository;
+            var repository = selection.SelectedValue as ISFConfig;
 
             if (repository == null) return;
 
