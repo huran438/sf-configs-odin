@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using SFramework.Configs.Editor;
 using SFramework.Configs.Runtime;
@@ -20,12 +21,12 @@ namespace SFramework.Configs.Odin.Editor
 
         private Dictionary<ISFConfig, string> _pathByMenu = new Dictionary<ISFConfig, string>();
 
-        [MenuItem("Window/SFramework/Repositories")]
+        [MenuItem("Window/SFramework/Configs")]
         private static void OpenWindow()
         {
             var window = GetWindow<SFConfigsWindow>();
             window.minSize = new Vector2(300f, 300f);
-            window.titleContent = new GUIContent("Repositories", EditorIcons.Eject.Raw);
+            window.titleContent = new GUIContent("Configs", EditorIcons.Eject.Raw);
             window.Show();
         }
 
@@ -49,8 +50,10 @@ namespace SFramework.Configs.Odin.Editor
 
                 foreach (var repository in repositories)
                 {
-                    var repoType = repository.Key.Type.Replace("SF", "").Replace("Repository", "");
-                    tree.Add($"Repositories/{repoType}/{repository.Key.Name}", repository.Key);
+                    var repoType = repository.Key.Type.Replace("SF", "").Replace("Config", "");
+                    var words = Regex.Matches(repoType, @"([A-Z][a-z]+)").Select(m => m.Value);
+                    var withSpaces = string.Join(" ", words);
+                    tree.Add($"Configs/{withSpaces}/{repository.Key.Id}", repository.Key);
                     _pathByMenu[repository.Key] = repository.Value;
                 }
             }
@@ -83,9 +86,9 @@ namespace SFramework.Configs.Odin.Editor
 
             if (repository == null) return;
 
-            var repoType = repository.Type.Replace("SF", "").Replace("Repository", "");
-            SirenixEditorGUI.Title(repository.Name, repoType, TextAlignment.Center, true);
-            repository.Name = SirenixEditorGUI.DynamicPrimitiveField(new GUIContent("Name"), repository.Name);
+            var repoType = repository.Type.Replace("SF", "").Replace("Config", "");
+            SirenixEditorGUI.Title(repository.Id, repoType, TextAlignment.Center, true);
+            repository.Id = SirenixEditorGUI.DynamicPrimitiveField(new GUIContent("Name"), repository.Id);
 
             scroll = GUILayout.BeginScrollView(scroll);
             {
