@@ -16,15 +16,16 @@ namespace SFramework.Configs.Odin.Editor
 {
     public class SFConfigsWindow : OdinMenuEditorWindow
     {
-        private Vector2 menuScroll;
-        private Vector2 scroll;
+        private Vector2 _menuScroll;
+        private Vector2 _scroll;
 
-        private Dictionary<ISFConfig, string> _pathByMenu = new Dictionary<ISFConfig, string>();
+        private readonly Dictionary<ISFConfig, string> _pathByMenu = new();
 
         [MenuItem("Window/SFramework/Configs")]
         private static void OpenWindow()
         {
             var window = GetWindow<SFConfigsWindow>();
+
             window.minSize = new Vector2(300f, 300f);
             window.titleContent = new GUIContent("Configs", EditorIcons.Eject.Raw);
             window.Show();
@@ -51,8 +52,7 @@ namespace SFramework.Configs.Odin.Editor
                 foreach (var repository in repositories)
                 {
                     var repoType = repository.Key.Type.Replace("SF", "").Replace("Config", "");
-                    var words = Regex.Matches(repoType, @"([A-Z][a-z]+)").Select(m => m.Value);
-                    var withSpaces = string.Join(" ", words);
+                    var withSpaces = Regex.Replace(repoType, "((?<=[a-z])[A-Z]|[A-Z](?=[a-z]))", " $1");
                     tree.Add($"Configs/{withSpaces}/{repository.Key.Id}", repository.Key);
                     _pathByMenu[repository.Key] = repository.Value;
                 }
@@ -63,7 +63,7 @@ namespace SFramework.Configs.Odin.Editor
 
         protected override void DrawMenu()
         {
-            menuScroll = GUILayout.BeginScrollView(menuScroll);
+            _menuScroll = GUILayout.BeginScrollView(_menuScroll);
             {
                 base.DrawMenu();
             }
@@ -90,7 +90,7 @@ namespace SFramework.Configs.Odin.Editor
             SirenixEditorGUI.Title(repository.Id, repoType, TextAlignment.Center, true);
             repository.Id = SirenixEditorGUI.DynamicPrimitiveField(new GUIContent("Name"), repository.Id);
 
-            scroll = GUILayout.BeginScrollView(scroll);
+            _scroll = GUILayout.BeginScrollView(_scroll);
             {
                 base.DrawEditor(index);
             }
@@ -103,8 +103,8 @@ namespace SFramework.Configs.Odin.Editor
             {
                 var result = JsonConvert.SerializeObject(repository, Formatting.Indented);
                 var path = Application.dataPath + _pathByMenu[repository].Replace("Assets", "");
-                var savePath = EditorUtility.SaveFilePanel("Save Repository", Path.GetDirectoryName(path), Path.GetFileName(path),
-                    "json");
+                var savePath = EditorUtility.SaveFilePanel("Save Repository", Path.GetDirectoryName(path),
+                    Path.GetFileName(path), "json");
                 if (!string.IsNullOrEmpty(savePath))
                 {
                     File.WriteAllText(savePath, result);
@@ -113,6 +113,7 @@ namespace SFramework.Configs.Odin.Editor
                 }
             }
         }
+
         private Type[] GetInheritedClasses(Type MyType)
         {
             return AppDomain.CurrentDomain.GetAssemblies()
