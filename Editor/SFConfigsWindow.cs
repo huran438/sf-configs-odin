@@ -88,7 +88,7 @@ namespace SFramework.Configs.Odin.Editor
 
             var repoType = repository.Type.Replace("SF", "").Replace("Config", "");
             SirenixEditorGUI.Title(repository.Id, repoType, TextAlignment.Center, true);
-            repository.Id = SirenixEditorGUI.DynamicPrimitiveField(new GUIContent("Name"), repository.Id);
+            repository.Id = SirenixEditorGUI.DynamicPrimitiveField(new GUIContent("Id"), repository.Id);
 
             _scroll = GUILayout.BeginScrollView(_scroll);
             {
