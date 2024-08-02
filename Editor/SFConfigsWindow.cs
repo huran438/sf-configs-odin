@@ -53,7 +53,12 @@ namespace SFramework.Configs.Odin.Editor
                 {
                     var repoType = repository.Key.Type.Replace("SF", "").Replace("Config", "");
                     var withSpaces = Regex.Replace(repoType, "((?<=[a-z])[A-Z]|[A-Z](?=[a-z]))", " $1");
-                    tree.Add($"Configs/{withSpaces}/{repository.Key.Id}", repository.Key);
+
+                    if (repository.Key is ISFNodesConfig nodesConfig)
+                    {
+                        tree.Add($"Configs/{withSpaces}/{nodesConfig.Id}", repository.Key);
+                    }
+                   
                     _pathByMenu[repository.Key] = repository.Value;
                 }
             }
@@ -87,8 +92,11 @@ namespace SFramework.Configs.Odin.Editor
             if (repository == null) return;
 
             var repoType = repository.Type.Replace("SF", "").Replace("Config", "");
-            SirenixEditorGUI.Title(repository.Id, repoType, TextAlignment.Center, true);
-            repository.Id = SirenixEditorGUI.DynamicPrimitiveField(new GUIContent("Id"), repository.Id);
+
+            if (repository is ISFNodesConfig nodesConfig)
+            {
+                SirenixEditorGUI.Title(nodesConfig.Id, repoType, TextAlignment.Center, true);
+            }
 
             _scroll = GUILayout.BeginScrollView(_scroll);
             {
