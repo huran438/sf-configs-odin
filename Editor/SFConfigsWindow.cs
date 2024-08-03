@@ -6,10 +6,12 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using SFramework.Configs.Editor;
 using SFramework.Configs.Runtime;
+using SFramework.Core.Runtime;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities;
 using Sirenix.Utilities.Editor;
 using UnityEditor;
+using UnityEditor.Experimental;
 using UnityEngine;
 
 namespace SFramework.Configs.Odin.Editor
@@ -25,7 +27,6 @@ namespace SFramework.Configs.Odin.Editor
         private static void OpenWindow()
         {
             var window = GetWindow<SFConfigsWindow>();
-
             window.minSize = new Vector2(300f, 300f);
             window.titleContent = new GUIContent("Configs", EditorIcons.Eject.Raw);
             window.Show();
@@ -47,21 +48,28 @@ namespace SFramework.Configs.Odin.Editor
 
             foreach (var type in GetInheritedClasses(typeof(ISFConfig)))
             {
-                var repositories = SFConfigsEditorExtensions.FindRepositoriesWithPaths(type);
+                var repositories = SFConfigsEditorExtensions.FindConfigsWithPaths(type);
 
                 foreach (var repository in repositories)
                 {
-                    var repoType = repository.Key.Type.Replace("SF", "").Replace("Config", "");
+                    var repoType = repository.Key.Type.Replace("SF", "").Replace("GlobalConfig", "").Replace("Config", "");
+                    repoType = Regex.Replace(repoType, @"\s+", "");
                     var withSpaces = Regex.Replace(repoType, "((?<=[a-z])[A-Z]|[A-Z](?=[a-z]))", " $1");
 
                     if (repository.Key is ISFNodesConfig nodesConfig)
                     {
-                        tree.Add($"Configs/{withSpaces}/{nodesConfig.Id}", repository.Key);
+                        tree.Add($"Node Configs/{withSpaces}/{nodesConfig.Id}", repository.Key);
                     }
-                   
+                    else
+                    {
+                        tree.Add($"Global Configs/{withSpaces}", repository.Key);
+                    }
+                    
                     _pathByMenu[repository.Key] = repository.Value;
                 }
             }
+            
+            tree.SortMenuItemsByName();
 
             return tree;
         }
@@ -78,10 +86,16 @@ namespace SFramework.Configs.Odin.Editor
 
             if (GUILayout.Button("Reload", GUILayoutOptions.Height(20)))
             {
-                ForceMenuTreeRebuild();
+                Reload();
             }
 
             GUILayout.Space(2);
+        }
+
+        private void Reload()
+        {
+            SFConfigsEditorExtensions.ReloadCache();
+            ForceMenuTreeRebuild();
         }
 
         protected override void DrawEditor(int index)
@@ -92,6 +106,7 @@ namespace SFramework.Configs.Odin.Editor
             if (repository == null) return;
 
             var repoType = repository.Type.Replace("SF", "").Replace("Config", "");
+
 
             if (repository is ISFNodesConfig nodesConfig)
             {
@@ -104,29 +119,80 @@ namespace SFramework.Configs.Odin.Editor
             }
 
             GUILayout.EndScrollView();
-            GUILayout.FlexibleSpace();
-            SirenixEditorGUI.HorizontalLineSeparator(1);
 
-            if (GUILayout.Button("Save"))
+            if (repository is ISFNodesConfig _)
             {
-                var result = JsonConvert.SerializeObject(repository, Formatting.Indented);
-                var path = Application.dataPath + _pathByMenu[repository].Replace("Assets", "");
-                var savePath = EditorUtility.SaveFilePanel("Save Repository", Path.GetDirectoryName(path),
-                    Path.GetFileName(path), "json");
-                if (!string.IsNullOrEmpty(savePath))
+                GUILayout.FlexibleSpace();
+                SirenixEditorGUI.HorizontalLineSeparator(1);
+
+                GUILayout.BeginHorizontal();
+
+                if (GUILayout.Button("Save"))
                 {
-                    File.WriteAllText(savePath, result);
-                    AssetDatabase.SaveAssets();
-                    AssetDatabase.Refresh();
+                    var path = Application.dataPath + _pathByMenu[repository].Replace("Assets", "");
+                    var savePath = EditorUtility.SaveFilePanel("Save Config", Path.GetDirectoryName(path), Path.GetFileName(path), "json");
+                    if (!string.IsNullOrEmpty(savePath))
+                    {
+                        var result = JsonConvert.SerializeObject(repository, Formatting.Indented);
+                        File.WriteAllText(savePath, result);
+                        AssetDatabase.SaveAssets();
+                        AssetDatabase.Refresh();
+                    }
+                    Reload();
+                }
+
+                if (GUILayout.Button("New"))
+                {
+                    var path = Application.dataPath + _pathByMenu[repository].Replace("Assets", "");
+                    path = AssetDatabase.GenerateUniqueAssetPath(path);
+                    var savePath = EditorUtility.SaveFilePanel("New Config", Path.GetDirectoryName(path), Path.GetFileName(path), "json");
+                    if (!string.IsNullOrEmpty(savePath))
+                    {
+                        var config = Activator.CreateInstance(repository.GetType()) as ISFNodesConfig;
+                        if (config == null)
+                        {
+                            SFDebug.Log(LogType.Error, "Config is NULL");
+                            return;
+                        }
+                        config.Type = repository.GetType().Name;
+                        config.Id = Path.GetFileNameWithoutExtension(path);
+                        var result = JsonConvert.SerializeObject(config, Formatting.Indented);
+                        File.WriteAllText(savePath, result);
+                        AssetDatabase.SaveAssets();
+                        AssetDatabase.Refresh();
+                    }
+                    Reload();
+                }
+
+                GUILayout.EndHorizontal();
+            }
+            else
+            {
+                GUILayout.FlexibleSpace();
+                SirenixEditorGUI.HorizontalLineSeparator(1);
+                
+                if (GUILayout.Button("Save"))
+                {
+                    var result = JsonConvert.SerializeObject(repository, Formatting.Indented);
+                    var path = Application.dataPath + _pathByMenu[repository].Replace("Assets", "");
+                    var savePath = EditorUtility.SaveFilePanel("Save Config", Path.GetDirectoryName(path),
+                        Path.GetFileName(path), "json");
+                    if (!string.IsNullOrEmpty(savePath))
+                    {
+                        File.WriteAllText(savePath, result);
+                        AssetDatabase.SaveAssets();
+                        AssetDatabase.Refresh();
+                    }
+                    Reload();
                 }
             }
         }
 
-        private Type[] GetInheritedClasses(Type MyType)
+        private Type[] GetInheritedClasses(Type type)
         {
             return AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(a => a.GetTypes())
-                .Where(t => t.IsClass && MyType.IsAssignableFrom(t))
+                .Where(t => t.IsClass && type.IsAssignableFrom(t))
                 .ToArray();
         }
     }
