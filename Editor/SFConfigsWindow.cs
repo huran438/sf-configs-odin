@@ -94,7 +94,6 @@ namespace SFramework.Configs.Odin.Editor
 
         private void Reload()
         {
-            SFConfigsEditorExtensions.ReloadCache();
             ForceMenuTreeRebuild();
         }
 
