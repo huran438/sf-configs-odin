@@ -24,8 +24,15 @@ namespace SFramework.Configs.Odin.Editor
         private readonly Dictionary<ISFConfig, string> _pathByMenu = new();
 
         [MenuItem("Window/SFramework/Configs")]
-        private static void OpenWindow()
+        public static void OpenWindow()
         {
+            if (EditorWindow.HasOpenInstances<SFConfigsWindow>())
+            {
+                EditorWindow.FocusWindowIfItsOpen<SFConfigsWindow>();
+                return;
+            }
+
+            SFConfigsEditorExtensions.RefreshConfigs();
             var window = GetWindow<SFConfigsWindow>();
             window.minSize = new Vector2(300f, 300f);
             window.titleContent = new GUIContent("Configs", EditorIcons.Eject.Raw);
@@ -64,11 +71,11 @@ namespace SFramework.Configs.Odin.Editor
                     {
                         tree.Add($"Global Configs/{withSpaces}", repository.Key);
                     }
-                    
+
                     _pathByMenu[repository.Key] = repository.Value;
                 }
             }
-            
+
             tree.SortMenuItemsByName();
 
             return tree;
@@ -138,6 +145,7 @@ namespace SFramework.Configs.Odin.Editor
                         AssetDatabase.SaveAssets();
                         AssetDatabase.Refresh();
                     }
+
                     Reload();
                 }
 
@@ -154,6 +162,7 @@ namespace SFramework.Configs.Odin.Editor
                             SFDebug.Log(LogType.Error, "Config is NULL");
                             return;
                         }
+
                         config.Type = repository.GetType().Name;
                         config.Id = Path.GetFileNameWithoutExtension(path);
                         var result = JsonConvert.SerializeObject(config, Formatting.Indented);
@@ -161,6 +170,7 @@ namespace SFramework.Configs.Odin.Editor
                         AssetDatabase.SaveAssets();
                         AssetDatabase.Refresh();
                     }
+
                     Reload();
                 }
 
@@ -170,7 +180,7 @@ namespace SFramework.Configs.Odin.Editor
             {
                 GUILayout.FlexibleSpace();
                 SirenixEditorGUI.HorizontalLineSeparator(1);
-                
+
                 if (GUILayout.Button("Save"))
                 {
                     var result = JsonConvert.SerializeObject(repository, Formatting.Indented);
@@ -183,6 +193,7 @@ namespace SFramework.Configs.Odin.Editor
                         AssetDatabase.SaveAssets();
                         AssetDatabase.Refresh();
                     }
+
                     Reload();
                 }
             }
