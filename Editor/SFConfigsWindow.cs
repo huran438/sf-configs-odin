@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -112,12 +113,18 @@ namespace SFramework.Configs.Odin.Editor
 
             if (repository == null) return;
 
-            var repoType = repository.Type.Replace("SF", "").Replace("Config", "");
-
-
+            var repoType = repository.Type.Replace("SF", "").Replace("Config", "").Replace("Global", "");
+            
             if (repository is ISFNodesConfig nodesConfig)
             {
-                SirenixEditorGUI.Title(nodesConfig.Id, repoType, TextAlignment.Center, true);
+                var timestamp = SFConfigsEditorExtensions.FromUnixTime(repository.Version);
+                SirenixEditorGUI.Title(nodesConfig.Id, $"Version: {timestamp.ToString(CultureInfo.InvariantCulture)}", TextAlignment.Center, true);
+            }
+            
+            if (repository is ISFGlobalConfig globalConfig)
+            {
+                var timestamp = SFConfigsEditorExtensions.FromUnixTime(repository.Version);
+                SirenixEditorGUI.Title(repoType, $"Version: {timestamp.ToString(CultureInfo.InvariantCulture)}", TextAlignment.Center, true);
             }
 
             _scroll = GUILayout.BeginScrollView(_scroll);
@@ -140,6 +147,7 @@ namespace SFramework.Configs.Odin.Editor
                     var savePath = EditorUtility.SaveFilePanel("Save Config", Path.GetDirectoryName(path), Path.GetFileName(path), "json");
                     if (!string.IsNullOrEmpty(savePath))
                     {
+                        repository.Version = DateTime.UtcNow.ToUnixTime();
                         var result = JsonConvert.SerializeObject(repository, Formatting.Indented);
                         File.WriteAllText(savePath, result);
                         AssetDatabase.SaveAssets();
@@ -183,6 +191,7 @@ namespace SFramework.Configs.Odin.Editor
 
                 if (GUILayout.Button("Save"))
                 {
+                    repository.Version = DateTime.UtcNow.ToUnixTime();
                     var result = JsonConvert.SerializeObject(repository, Formatting.Indented);
                     var path = Application.dataPath + _pathByMenu[repository].Replace("Assets", "");
                     var savePath = EditorUtility.SaveFilePanel("Save Config", Path.GetDirectoryName(path),
