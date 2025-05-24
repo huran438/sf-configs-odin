@@ -33,7 +33,7 @@ namespace SFramework.Configs.Odin.Editor
                 return;
             }
 
-            SFConfigsEditorExtensions.RefreshConfigs();
+            SFConfigsEditorUtility.RefreshConfigs();
             var window = GetWindow<SFConfigsWindow>();
             window.minSize = new Vector2(300f, 300f);
             window.titleContent = new GUIContent("Configs", EditorIcons.Eject.Raw);
@@ -56,7 +56,7 @@ namespace SFramework.Configs.Odin.Editor
 
             foreach (var type in GetInheritedClasses(typeof(ISFConfig)))
             {
-                var repositories = SFConfigsEditorExtensions.FindConfigsWithPaths(type);
+                var repositories = SFConfigsEditorUtility.FindConfigsWithPaths(type);
 
                 foreach (var repository in repositories)
                 {
@@ -102,7 +102,7 @@ namespace SFramework.Configs.Odin.Editor
 
         private void Reload()
         {
-            SFConfigsEditorExtensions.RefreshConfigs();
+            SFConfigsEditorUtility.RefreshConfigs();
             ForceMenuTreeRebuild();
         }
 
@@ -117,13 +117,13 @@ namespace SFramework.Configs.Odin.Editor
             
             if (repository is ISFNodesConfig nodesConfig)
             {
-                var timestamp = SFConfigsEditorExtensions.FromUnixTime(repository.Version);
+                var timestamp = SFConfigsEditorUtility.FromUnixTime(repository.Version);
                 SirenixEditorGUI.Title(nodesConfig.Id, $"Version: {timestamp.ToString(CultureInfo.InvariantCulture)}", TextAlignment.Center, true);
             }
             
             if (repository is ISFGlobalConfig globalConfig)
             {
-                var timestamp = SFConfigsEditorExtensions.FromUnixTime(repository.Version);
+                var timestamp = SFConfigsEditorUtility.FromUnixTime(repository.Version);
                 SirenixEditorGUI.Title(repoType, $"Version: {timestamp.ToString(CultureInfo.InvariantCulture)}", TextAlignment.Center, true);
             }
 
