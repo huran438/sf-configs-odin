@@ -144,6 +144,21 @@ namespace SFramework.Configs.Odin.Editor
                 if (GUILayout.Button("Save"))
                 {
                     var path = Application.dataPath + _pathByMenu[repository].Replace("Assets", "");
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        repository.Version = DateTime.UtcNow.ToUnixTime();
+                        var result = JsonConvert.SerializeObject(repository, Formatting.Indented);
+                        File.WriteAllText(path, result);
+                        AssetDatabase.SaveAssets();
+                        AssetDatabase.Refresh();
+                    }
+
+                    Reload();
+                }
+                
+                if (GUILayout.Button("Save As"))
+                {
+                    var path = Application.dataPath + _pathByMenu[repository].Replace("Assets", "");
                     var savePath = EditorUtility.SaveFilePanel("Save Config", Path.GetDirectoryName(path), Path.GetFileName(path), "json");
                     if (!string.IsNullOrEmpty(savePath))
                     {
@@ -194,11 +209,9 @@ namespace SFramework.Configs.Odin.Editor
                     repository.Version = DateTime.UtcNow.ToUnixTime();
                     var result = JsonConvert.SerializeObject(repository, Formatting.Indented);
                     var path = Application.dataPath + _pathByMenu[repository].Replace("Assets", "");
-                    var savePath = EditorUtility.SaveFilePanel("Save Config", Path.GetDirectoryName(path),
-                        Path.GetFileName(path), "json");
-                    if (!string.IsNullOrEmpty(savePath))
+                    if (!string.IsNullOrEmpty(path))
                     {
-                        File.WriteAllText(savePath, result);
+                        File.WriteAllText(path, result);
                         AssetDatabase.SaveAssets();
                         AssetDatabase.Refresh();
                     }
