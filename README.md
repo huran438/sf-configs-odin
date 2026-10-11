@@ -2,8 +2,6 @@
 
 # SF Configs Odin
 
-[Documentation website](https://docs.secretplace.studio/#sf-configs-odin)
-
 An Odin Inspector editor window for JSON configurations from [SF Configs](https://github.com/huran438/sf-configs). Browse configuration instances, edit their values, and write them back to their source files. Node configurations also offer **Save As** and **New** actions.
 
 Package: `sp.sframework.configs.odin` · Version: `1.0.0` · Editor only · [MIT license](LICENSE.md)
