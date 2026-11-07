@@ -1,0 +1,35 @@
+{
+  "name": "SFramework.Configs.Odin.Editor.Tests",
+  "rootNamespace": "SFramework.Configs.Odin.Editor.Tests",
+  "references": [
+    "SFramework.Configs.Odin.Editor",
+    "SFramework.Configs.Runtime",
+    "SFramework.Configs.Editor"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll",
+    "Sirenix.OdinInspector.Editor.dll",
+    "Sirenix.OdinInspector.Attributes.dll",
+    "Sirenix.Utilities.dll",
+    "Sirenix.Utilities.Editor.dll",
+    "Sirenix.Serialization.dll",
+    "Sirenix.Serialization.Config.dll",
+    "Newtonsoft.Json.dll"
+  ],
+  "autoReferenced": false,
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS",
+    "ODIN_INSPECTOR"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
